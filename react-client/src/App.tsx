@@ -1,25 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Route, NavLink } from "react-router-dom";
+import List from "./List";
+import Customer from "./Customer";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <body>
+      <Router>
+        <header>
+          <nav>
+            <ul>
+              <li>
+                <NavLink to="/">Home</NavLink>
+                <NavLink to="/">Customers</NavLink>
+              </li>
+            </ul>
+          </nav>
+        </header>
+        <main style={{ padding: "2rem" }}>
+          <Route exact path="/" component={List} />
+          <Route path="/customer/:id" component={Customer} />
+        </main>
+      </Router>
+    </body>
   );
 }
 
