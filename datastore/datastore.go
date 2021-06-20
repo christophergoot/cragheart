@@ -6,7 +6,18 @@ import (
 	"github.com/customerio/homework/serve"
 )
 
-type Datastore struct{}
+type Datastore struct {
+	Customers map[int]serve.Customer
+	EventLog  map[string]EventData
+}
+
+type EventData struct {
+	ID        string
+	Name      string
+	UserID    int
+	Data      map[string]string
+	Timestamp int
+}
 
 func (d Datastore) Get(id int) (*serve.Customer, error) {
 	return nil, errors.New("unimplemented")
