@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"errors"
+	"sort"
 	"time"
 
 	"github.com/customerio/homework/serve"
@@ -29,13 +30,18 @@ func (d Datastore) Get(id int) (*serve.Customer, error) {
 }
 
 func (d Datastore) List(page, count int) ([]*serve.Customer, error) {
+	var ids []int
+	for id := range d.Customers {
+		ids = append(ids, id)
+	}
+	sort.Ints(ids)
+
 	var list []*serve.Customer
 	counter := 0
 	first := (page - 1) * count
 	last := first + count
 
-	for id := range d.Customers {
-		counter++
+	for id := range ids {
 		if counter > last {
 			break
 		}
@@ -43,6 +49,7 @@ func (d Datastore) List(page, count int) ([]*serve.Customer, error) {
 			c := d.Customers[id]
 			list = append(list, &c)
 		}
+		counter++
 	}
 
 	return list, nil
