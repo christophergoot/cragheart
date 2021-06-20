@@ -16,7 +16,7 @@ type EventData struct {
 	Name      string
 	UserID    int
 	Data      map[string]string
-	Timestamp int
+	Timestamp int64
 }
 
 func (d Datastore) Get(id int) (*serve.Customer, error) {
@@ -28,19 +28,11 @@ func (d Datastore) List(page, count int) ([]*serve.Customer, error) {
 }
 
 func (m Datastore) Create(id int, attributes map[string]string) (*serve.Customer, error) {
-	c := serve.Customer{Attributes: attributes}
-	c.Events = make(map[string]int)
-	m.Customers[id] = c
-
-	return &c, nil
+	return m.createUser(id, attributes, time.Now().Unix())
 }
 
 func (m Datastore) Update(id int, attributes map[string]string) (*serve.Customer, error) {
-	c := m.Customers[id]
-	for k, v := range c.Attributes {
-		c.Attributes[k] = v
-	}
-	return &c, nil
+	return m.updateUser(id, attributes, time.Now().Unix())
 }
 
 func (m Datastore) Delete(id int) error {

@@ -24,11 +24,11 @@ func (d Datastore) ParseRecord(rec *stream.Record) error {
 		return err
 	}
 
-	if rec.Type == "attribute" {
+	if rec.Type == "attributes" {
 		if _, exists := d.Customers[userID]; !exists {
-			_, err = d.Create(userID, rec.Data)
+			_, err = d.createUser(userID, rec.Data, rec.Timestamp)
 		} else {
-			_, err = d.Update(userID, rec.Data)
+			_, err = d.updateUser(userID, rec.Data, rec.Timestamp)
 		}
 	}
 
@@ -37,11 +37,11 @@ func (d Datastore) ParseRecord(rec *stream.Record) error {
 			return nil
 		}
 
-		d.EventLog[rec.ID] = EventData{ID: rec.ID, Name: rec.Name, UserID: userID, Data: rec.Data, Timestamp: int(rec.Timestamp)}
+		d.EventLog[rec.ID] = EventData{ID: rec.ID, Name: rec.Name, UserID: userID, Data: rec.Data, Timestamp: rec.Timestamp}
 
 		c, exists := d.Customers[userID]
 		if !exists { // create customer if not yet encountered
-			newCustomer, err := d.Create(userID, rec.Data)
+			newCustomer, err := d.createUser(userID, make(map[string]string), rec.Timestamp)
 			if err != nil {
 				return err
 			}
@@ -53,4 +53,25 @@ func (d Datastore) ParseRecord(rec *stream.Record) error {
 		d.Customers[userID] = c
 	}
 	return err
+}
+
+func (m Datastore) createUser(id int, attributes map[string]string, timestamp int64) (*serve.Customer, error) {
+	c := serve.Customer{ID: id, Attributes: attributes, LastUpdated: timestamp}
+	c.Events = make(map[string]int)
+	m.Customers[id] = c
+
+	return &c, nil
+}
+
+func (m Datastore) updateUser(id int, attributes map[string]string, timestamp int64) (*serve.Customer, error) {
+	c := m.Customers[id]
+	if c.LastUpdated < timestamp {
+		c.LastUpdated = timestamp
+		for k, v := range c.Attributes {
+			c.Attributes[k] = v
+		}
+	}
+	m.Customers[id] = c
+
+	return &c, nil
 }
