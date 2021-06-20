@@ -29,11 +29,20 @@ func (d Datastore) Get(id int) (*serve.Customer, error) {
 }
 
 func (d Datastore) List(page, count int) ([]*serve.Customer, error) {
-	// TODO pagination
 	var list []*serve.Customer
+	counter := 0
+	first := (page - 1) * count
+	last := first + count
+
 	for id := range d.Customers {
-		c := d.Customers[id]
-		list = append(list, &c)
+		counter++
+		if counter > last {
+			break
+		}
+		if counter >= first {
+			c := d.Customers[id]
+			list = append(list, &c)
+		}
 	}
 
 	return list, nil
