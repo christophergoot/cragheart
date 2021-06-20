@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"errors"
+	"time"
 
 	"github.com/customerio/homework/serve"
 )
@@ -20,11 +21,22 @@ type EventData struct {
 }
 
 func (d Datastore) Get(id int) (*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	c, exists := d.Customers[id]
+	if !exists {
+		return nil, errors.New("customer not found")
+	}
+	return &c, nil
 }
 
 func (d Datastore) List(page, count int) ([]*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	// TODO pagination
+	var list []*serve.Customer
+	for id := range d.Customers {
+		c := d.Customers[id]
+		list = append(list, &c)
+	}
+
+	return list, nil
 }
 
 func (m Datastore) Create(id int, attributes map[string]string) (*serve.Customer, error) {
@@ -36,9 +48,15 @@ func (m Datastore) Update(id int, attributes map[string]string) (*serve.Customer
 }
 
 func (m Datastore) Delete(id int) error {
-	return errors.New("unimplemented")
+	_, exists := m.Customers[id]
+	if !exists {
+		return errors.New("customer not found")
+	}
+	delete(m.Customers, id)
+
+	return nil
 }
 
 func (m Datastore) TotalCustomers() (int, error) {
-	return 0, errors.New("unimplemented")
+	return len(m.Customers), nil
 }
