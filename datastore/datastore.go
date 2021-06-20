@@ -28,11 +28,19 @@ func (d Datastore) List(page, count int) ([]*serve.Customer, error) {
 }
 
 func (m Datastore) Create(id int, attributes map[string]string) (*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	c := serve.Customer{Attributes: attributes}
+	c.Events = make(map[string]int)
+	m.Customers[id] = c
+
+	return &c, nil
 }
 
 func (m Datastore) Update(id int, attributes map[string]string) (*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	c := m.Customers[id]
+	for k, v := range c.Attributes {
+		c.Attributes[k] = v
+	}
+	return &c, nil
 }
 
 func (m Datastore) Delete(id int) error {
