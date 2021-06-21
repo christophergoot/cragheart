@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/customerio/homework/datastore"
 	"github.com/customerio/homework/serve"
 	"github.com/customerio/homework/stream"
 )
@@ -21,15 +22,18 @@ func main() {
 		cancel()
 	}()
 
-	var ds serve.Datastore
-
-	ch, err := stream.Process(ctx, nil)
+	file, err := os.Open("data/initial_data.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	for rec := range ch {
-		_ = rec
+
+	ch, err := stream.Process(ctx, file)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	ds, err := datastore.NewDatastoreFromChannel(ch)
+
 	if err := ctx.Err(); err != nil {
 		log.Fatal(err)
 	}

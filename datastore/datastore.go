@@ -2,32 +2,77 @@ package datastore
 
 import (
 	"errors"
+	"sort"
+	"time"
 
 	"github.com/customerio/homework/serve"
 )
 
-type Datastore struct{}
+type Datastore struct {
+	Customers map[int]serve.Customer
+	EventLog  map[string]EventData
+}
+
+type EventData struct {
+	ID        string
+	Name      string
+	UserID    int
+	Data      map[string]string
+	Timestamp int64
+}
 
 func (d Datastore) Get(id int) (*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	c, exists := d.Customers[id]
+	if !exists {
+		return nil, errors.New("customer not found")
+	}
+	return &c, nil
 }
 
 func (d Datastore) List(page, count int) ([]*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	var ids []int
+	for id := range d.Customers {
+		ids = append(ids, id)
+	}
+	sort.Ints(ids)
+
+	var list []*serve.Customer
+	counter := 0
+	first := (page - 1) * count
+	last := first + count
+
+	for id := range ids {
+		if counter > last {
+			break
+		}
+		if counter >= first {
+			c := d.Customers[id]
+			list = append(list, &c)
+		}
+		counter++
+	}
+
+	return list, nil
 }
 
 func (m Datastore) Create(id int, attributes map[string]string) (*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	return m.createUser(id, attributes, time.Now().Unix())
 }
 
 func (m Datastore) Update(id int, attributes map[string]string) (*serve.Customer, error) {
-	return nil, errors.New("unimplemented")
+	return m.updateUser(id, attributes, time.Now().Unix())
 }
 
 func (m Datastore) Delete(id int) error {
-	return errors.New("unimplemented")
+	_, exists := m.Customers[id]
+	if !exists {
+		return errors.New("customer not found")
+	}
+	delete(m.Customers, id)
+
+	return nil
 }
 
 func (m Datastore) TotalCustomers() (int, error) {
-	return 0, errors.New("unimplemented")
+	return len(m.Customers), nil
 }
